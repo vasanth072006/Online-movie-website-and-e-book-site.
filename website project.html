@@ -1,0 +1,2462 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LUMIÈRE — Discover Movies & Books</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* ══════════════════════════════════
+   THEME VARIABLES
+══════════════════════════════════ */
+      [data-theme="dark"] {
+        --bg: #080a0f;
+        --surface: #0d1017;
+        --surface2: #141820;
+        --surface3: #1a2030;
+        --border: rgba(255, 255, 255, 0.07);
+        --border2: rgba(255, 255, 255, 0.12);
+        --border3: rgba(255, 255, 255, 0.18);
+        --gold: #c9a84c;
+        --gold-light: #e8c97a;
+        --gold-dim: rgba(201, 168, 76, 0.15);
+        --text: #e8e4dc;
+        --text-dim: rgba(232, 228, 220, 0.55);
+        --text-muted: rgba(232, 228, 220, 0.28);
+        --movie: #e05c5c;
+        --book: #5c9ae0;
+        --shadow: rgba(0, 0, 0, 0.6);
+        --noise-opacity: 0.4;
+        --hero-overlay: rgba(8, 10, 15, 0.6);
+      }
+
+      [data-theme="light"] {
+        --bg: #f5f2ec;
+        --surface: #ffffff;
+        --surface2: #f0ece3;
+        --surface3: #e8e2d6;
+        --border: rgba(0, 0, 0, 0.08);
+        --border2: rgba(0, 0, 0, 0.14);
+        --border3: rgba(0, 0, 0, 0.22);
+        --gold: #9a7428;
+        --gold-light: #7a5a18;
+        --gold-dim: rgba(154, 116, 40, 0.12);
+        --text: #1a1610;
+        --text-dim: rgba(26, 22, 16, 0.6);
+        --text-muted: rgba(26, 22, 16, 0.38);
+        --movie: #c0392b;
+        --book: #2563a8;
+        --shadow: rgba(0, 0, 0, 0.15);
+        --noise-opacity: 0.15;
+        --hero-overlay: rgba(245, 242, 236, 0.55);
+      }
+
+      :root {
+        --radius: 4px;
+        --transition: 0.3s ease;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Syne", sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        transition:
+          background 0.4s ease,
+          color 0.4s ease;
+      }
+
+      /* Noise */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 9999;
+        opacity: var(--noise-opacity);
+      }
+
+      /* ══════════════════════════════════
+   HEADER
+══════════════════════════════════ */
+      header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 200;
+        padding: 0 4rem;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg);
+        backdrop-filter: blur(20px);
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+
+      .logo {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 1.7rem;
+        font-weight: 300;
+        letter-spacing: 0.3em;
+        color: var(--gold);
+        text-transform: uppercase;
+        cursor: pointer;
+        text-decoration: none;
+        flex-shrink: 0;
+      }
+      .logo sup {
+        font-size: 0.35em;
+        letter-spacing: 0.1em;
+        vertical-align: super;
+        color: var(--text-muted);
+      }
+
+      .header-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .nav-btn {
+        background: transparent;
+        border: 1px solid var(--border2);
+        color: var(--text-dim);
+        font-family: "Syne", sans-serif;
+        font-size: 0.62rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        padding: 0.45rem 1rem;
+        cursor: pointer;
+        border-radius: 2px;
+        transition: all 0.2s;
+      }
+      .nav-btn:hover,
+      .nav-btn.active {
+        background: var(--gold-dim);
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+      .nav-btn.fav-btn {
+        position: relative;
+      }
+      .fav-count {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: var(--movie);
+        color: #fff;
+        font-size: 0.5rem;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        display: none;
+      }
+      .fav-count.show {
+        display: flex;
+      }
+
+      /* Theme toggle */
+      .theme-toggle {
+        width: 52px;
+        height: 28px;
+        background: var(--surface2);
+        border: 1px solid var(--border2);
+        border-radius: 14px;
+        cursor: pointer;
+        position: relative;
+        transition: background 0.3s;
+        flex-shrink: 0;
+      }
+      .theme-toggle::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--gold);
+        transition:
+          transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+          background 0.3s;
+      }
+      [data-theme="light"] .theme-toggle::after {
+        transform: translateX(24px);
+      }
+      .theme-icon {
+        position: absolute;
+        font-size: 0.6rem;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        transition: opacity 0.2s;
+      }
+      .theme-icon.moon {
+        left: 7px;
+      }
+      .theme-icon.sun {
+        right: 6px;
+      }
+      [data-theme="light"] .theme-icon.moon {
+        opacity: 0.3;
+      }
+      [data-theme="dark"] .theme-icon.sun {
+        opacity: 0.3;
+      }
+
+      /* ══════════════════════════════════
+   HERO WITH WALLPAPER SLIDESHOW
+══════════════════════════════════ */
+      .hero {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 100px 2rem 5rem;
+        overflow: hidden;
+      }
+
+      /* Wallpaper slides */
+      .hero-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+      }
+      .wallpaper-slide {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 1.2s ease;
+        transform: scale(1.04);
+        transition:
+          opacity 1.2s ease,
+          transform 8s ease;
+      }
+      .wallpaper-slide.active {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      /* Cinematic wallpapers via Unsplash (free, no key needed) */
+      #slide0 {
+        background-image: url("https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=1800&q=80");
+      }
+      #slide1 {
+        background-image: url("https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1800&q=80");
+      }
+      #slide2 {
+        background-image: url("https://images.unsplash.com/photo-1608889825205-eebdb9fc5806?w=1800&q=80");
+      }
+      #slide3 {
+        background-image: url("https://images.unsplash.com/photo-1596727147705-61a532a659bd?w=1800&q=80");
+      }
+      #slide4 {
+        background-image: url("https://images.unsplash.com/photo-1531259683007-016a7b628fc3?w=1800&q=80");
+      }
+      #slide5 {
+        background-image: url("https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1800&q=80");
+      }
+
+      .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(
+            to bottom,
+            var(--hero-overlay) 0%,
+            transparent 40%,
+            transparent 60%,
+            var(--bg) 100%
+          ),
+          linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, transparent 100%);
+        z-index: 1;
+        transition: background 0.4s;
+      }
+
+      /* Slide indicators */
+      .slide-dots {
+        position: absolute;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 0.5rem;
+        z-index: 10;
+      }
+      .slide-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        padding: 0;
+      }
+      .slide-dot.active {
+        width: 24px;
+        border-radius: 3px;
+        background: var(--gold);
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 5;
+      }
+
+      .hero-eyebrow {
+        font-size: 0.62rem;
+        letter-spacing: 0.4em;
+        color: var(--gold);
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+        opacity: 0;
+        animation: fadeUp 0.8s ease forwards 0.1s;
+      }
+
+      .hero-title {
+        font-family: "Cormorant Garamond", serif;
+        font-size: clamp(3.5rem, 9vw, 8rem);
+        font-weight: 300;
+        line-height: 0.95;
+        letter-spacing: -0.01em;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        animation: fadeUp 0.8s ease forwards 0.2s;
+      }
+      .hero-title em {
+        font-style: italic;
+        color: var(--gold-light);
+      }
+
+      .hero-sub {
+        font-size: 0.85rem;
+        letter-spacing: 0.12em;
+        color: var(--text-dim);
+        margin-bottom: 3rem;
+        opacity: 0;
+        animation: fadeUp 0.8s ease forwards 0.35s;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+      }
+
+      /* ══════════════════════════════════
+   SEARCH
+══════════════════════════════════ */
+      .search-area {
+        opacity: 0;
+        animation: fadeUp 0.8s ease forwards 0.45s;
+        width: 100%;
+        max-width: 700px;
+        margin: 0 auto;
+      }
+
+      .tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
+      .tab {
+        padding: 0.65rem 2.2rem;
+        background: rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border2);
+        color: var(--text-dim);
+        font-family: "Syne", sans-serif;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.25s;
+      }
+      .tab:first-child {
+        border-radius: 2px 0 0 2px;
+      }
+      .tab:last-child {
+        border-radius: 0 2px 2px 0;
+        margin-left: -1px;
+      }
+      .tab.active[data-type="movies"] {
+        background: rgba(224, 92, 92, 0.2);
+        border-color: var(--movie);
+        color: var(--movie);
+      }
+      .tab.active[data-type="books"] {
+        background: rgba(92, 154, 224, 0.2);
+        border-color: var(--book);
+        color: var(--book);
+      }
+      .tab:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+      }
+
+      .search-box {
+        display: flex;
+        align-items: center;
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: 2px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        transition:
+          border-color 0.3s,
+          box-shadow 0.3s,
+          background 0.4s;
+      }
+      .search-box:focus-within {
+        border-color: var(--gold);
+        box-shadow:
+          0 0 0 3px var(--gold-dim),
+          0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+      .search-icon {
+        padding: 0 1.25rem;
+        color: var(--gold);
+        font-size: 1.1rem;
+        pointer-events: none;
+        flex-shrink: 0;
+      }
+      #searchInput {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--text);
+        font-family: "Cormorant Garamond", serif;
+        font-size: 1.4rem;
+        font-weight: 300;
+        letter-spacing: 0.05em;
+        padding: 1.1rem 0;
+        transition: color 0.3s;
+      }
+      #searchInput::placeholder {
+        color: var(--text-muted);
+      }
+
+      .search-btn {
+        margin: 0.4rem;
+        padding: 0.65rem 1.6rem;
+        background: var(--gold);
+        border: none;
+        border-radius: 1px;
+        color: #0a0800;
+        font-family: "Syne", sans-serif;
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+        white-space: nowrap;
+      }
+      .search-btn:hover {
+        background: var(--gold-light);
+        transform: scale(1.02);
+      }
+      .search-btn:active {
+        transform: scale(0.98);
+      }
+
+      /* Quick suggestions */
+      .quick-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 1.2rem;
+      }
+      .quick-tag {
+        font-size: 0.6rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        padding: 0.3rem 0.9rem;
+        border: 1px solid var(--border2);
+        border-radius: 20px;
+        color: var(--text-muted);
+        cursor: pointer;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(8px);
+        transition: all 0.2s;
+      }
+      .quick-tag:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+        background: var(--gold-dim);
+      }
+
+      /* ══════════════════════════════════
+   TRENDING STRIP
+══════════════════════════════════ */
+      .trending-strip {
+        background: var(--surface2);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 0.8rem 4rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        transition: background 0.4s;
+      }
+      .trending-strip::-webkit-scrollbar {
+        display: none;
+      }
+      .trending-label {
+        font-size: 0.55rem;
+        letter-spacing: 0.3em;
+        color: var(--gold);
+        text-transform: uppercase;
+        font-weight: 700;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .trending-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        cursor: pointer;
+        white-space: nowrap;
+        padding: 0.3rem 0;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+        flex-shrink: 0;
+      }
+      .trending-item:hover {
+        opacity: 1;
+      }
+      .trending-num {
+        font-family: "DM Mono", monospace;
+        font-size: 0.55rem;
+        color: var(--gold);
+        min-width: 1rem;
+      }
+      .trending-name {
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+        color: var(--text-dim);
+      }
+      .trending-sep {
+        width: 1px;
+        height: 20px;
+        background: var(--border2);
+        flex-shrink: 0;
+      }
+
+      /* ══════════════════════════════════
+   MAIN CONTENT
+══════════════════════════════════ */
+      .main {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 3rem 4rem 6rem;
+        position: relative;
+        z-index: 5;
+      }
+
+      /* View switcher */
+      .view-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .results-label {
+        font-size: 0.62rem;
+        letter-spacing: 0.25em;
+        color: var(--text-muted);
+        text-transform: uppercase;
+      }
+      .results-count {
+        font-family: "DM Mono", monospace;
+        font-size: 0.72rem;
+        color: var(--gold);
+      }
+      .view-btns {
+        display: flex;
+        gap: 0.3rem;
+      }
+      .view-btn {
+        background: transparent;
+        border: 1px solid var(--border2);
+        color: var(--text-muted);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 2px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+      .view-btn.active,
+      .view-btn:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+        background: var(--gold-dim);
+      }
+
+      /* ══════════════════════════════════
+   GRID / LIST
+══════════════════════════════════ */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+        transition: all 0.3s;
+      }
+      .grid.list-view {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      /* ══════════════════════════════════
+   CARD
+══════════════════════════════════ */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        cursor: pointer;
+        transition:
+          transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+          border-color 0.3s,
+          box-shadow 0.3s,
+          background 0.4s;
+        opacity: 0;
+        animation: cardIn 0.5s ease forwards;
+        position: relative;
+      }
+      .card:hover {
+        transform: translateY(-6px);
+        border-color: var(--border3);
+        box-shadow:
+          0 24px 70px var(--shadow),
+          0 0 0 1px var(--gold-dim);
+      }
+
+      /* List view card */
+      .grid.list-view .card {
+        display: flex;
+        flex-direction: row;
+      }
+      .grid.list-view .card:hover {
+        transform: translateX(4px) translateY(0);
+      }
+      .grid.list-view .card-poster {
+        width: 70px;
+        aspect-ratio: 2/3;
+        flex-shrink: 0;
+      }
+      .grid.list-view .card-poster-placeholder {
+        width: 70px;
+        aspect-ratio: 2/3;
+        flex-shrink: 0;
+        font-size: 1.2rem;
+      }
+      .grid.list-view .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .card-poster {
+        width: 100%;
+        aspect-ratio: 2/3;
+        object-fit: cover;
+        display: block;
+        background: var(--surface2);
+        transition: transform 0.4s ease;
+      }
+      .card:hover .card-poster {
+        transform: scale(1.04);
+      }
+
+      .card-poster-placeholder {
+        width: 100%;
+        aspect-ratio: 2/3;
+        background: var(--surface2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        color: var(--text-muted);
+        font-size: 2.2rem;
+        transition: background 0.4s;
+      }
+      .card-poster-placeholder span {
+        font-size: 0.55rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        font-family: "Syne", sans-serif;
+      }
+
+      .card-type-badge {
+        position: absolute;
+        top: 0.6rem;
+        right: 0.6rem;
+        font-size: 0.48rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-weight: 700;
+        padding: 0.2rem 0.5rem;
+        border-radius: 1px;
+        backdrop-filter: blur(8px);
+      }
+      .badge-movie {
+        background: rgba(224, 92, 92, 0.2);
+        color: var(--movie);
+        border: 1px solid rgba(224, 92, 92, 0.3);
+      }
+      .badge-book {
+        background: rgba(92, 154, 224, 0.2);
+        color: var(--book);
+        border: 1px solid rgba(92, 154, 224, 0.3);
+      }
+
+      /* Fav button on card */
+      .card-fav {
+        position: absolute;
+        top: 0.6rem;
+        left: 0.6rem;
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.5);
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        opacity: 0;
+        pointer-events: none;
+        line-height: 1;
+        padding: 0;
+        z-index: 5;
+      }
+      .card:hover .card-fav {
+        opacity: 1;
+        pointer-events: all;
+      }
+      .card-fav.faved {
+        color: var(--movie);
+        border-color: var(--movie);
+        opacity: 1;
+        pointer-events: all;
+        background: rgba(224, 92, 92, 0.15);
+      }
+      .card-fav:hover {
+        transform: scale(1.15);
+      }
+
+      .card-body {
+        padding: 1rem;
+      }
+      .card-title {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.3;
+        margin-bottom: 0.4rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .card-meta {
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+        color: var(--text-dim);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .card-year {
+        font-family: "DM Mono", monospace;
+        font-size: 0.62rem;
+        color: var(--gold);
+      }
+      .card-rating {
+        display: flex;
+        align-items: center;
+        color: var(--gold-light);
+        font-family: "DM Mono", monospace;
+        font-size: 0.62rem;
+      }
+      .card-rating::before {
+        content: "★ ";
+      }
+
+      /* ══════════════════════════════════
+   MODAL
+══════════════════════════════════ */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(4, 6, 10, 0.88);
+        z-index: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+      .modal-overlay.open {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: var(--radius);
+        max-width: 960px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        transform: translateY(24px) scale(0.97);
+        transition:
+          transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+          background 0.4s;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border2) transparent;
+      }
+      .modal-overlay.open .modal {
+        transform: translateY(0) scale(1);
+      }
+
+      /* Modal backdrop */
+      .modal-backdrop-img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        display: block;
+        filter: brightness(0.5);
+      }
+      .modal-backdrop-placeholder {
+        width: 100%;
+        height: 120px;
+        background: linear-gradient(135deg, var(--surface2), var(--surface3));
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        z-index: 10;
+        line-height: 1;
+        padding: 0;
+      }
+      .modal-close:hover {
+        background: rgba(224, 92, 92, 0.4);
+        transform: rotate(90deg);
+      }
+
+      .modal-body {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 0;
+      }
+
+      .modal-poster-col {
+        padding: 1.5rem;
+        background: var(--surface2);
+        border-right: 1px solid var(--border);
+        transition: background 0.4s;
+      }
+      .modal-poster-img {
+        width: 100%;
+        border-radius: 2px;
+        box-shadow: 0 12px 40px var(--shadow);
+        display: block;
+      }
+      .modal-poster-ph {
+        width: 100%;
+        aspect-ratio: 2/3;
+        background: var(--surface3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        border-radius: 2px;
+        color: var(--text-muted);
+      }
+
+      .modal-fav-btn {
+        width: 100%;
+        margin-top: 1rem;
+        padding: 0.6rem;
+        background: transparent;
+        border: 1px solid var(--border2);
+        color: var(--text-dim);
+        font-family: "Syne", sans-serif;
+        font-size: 0.6rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border-radius: 2px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+      }
+      .modal-fav-btn:hover,
+      .modal-fav-btn.faved {
+        background: rgba(224, 92, 92, 0.1);
+        border-color: var(--movie);
+        color: var(--movie);
+      }
+
+      .modal-content {
+        padding: 2rem 2.5rem;
+      }
+
+      .modal-badge {
+        display: inline-block;
+        font-size: 0.52rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        font-weight: 700;
+        padding: 0.22rem 0.65rem;
+        border-radius: 1px;
+        margin-bottom: 0.8rem;
+      }
+
+      .modal-title {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 2rem;
+        font-weight: 400;
+        line-height: 1.15;
+        margin-bottom: 0.4rem;
+      }
+      .modal-subtitle {
+        font-family: "Cormorant Garamond", serif;
+        font-style: italic;
+        font-size: 1rem;
+        color: var(--text-dim);
+        margin-bottom: 1.5rem;
+      }
+
+      .modal-stats {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .stat {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+      .stat-label {
+        font-size: 0.52rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .stat-value {
+        font-family: "DM Mono", monospace;
+        font-size: 0.88rem;
+        color: var(--gold);
+      }
+      .stat-value.text {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 1rem;
+        color: var(--text);
+      }
+
+      /* Star rating display */
+      .star-display {
+        display: flex;
+        gap: 2px;
+        margin-bottom: 1rem;
+      }
+      .star-display span {
+        font-size: 0.9rem;
+        color: var(--border2);
+        transition: color 0.1s;
+      }
+      .star-display span.lit {
+        color: var(--gold);
+      }
+
+      .modal-overview {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--text-dim);
+        margin-bottom: 1.5rem;
+      }
+
+      .modal-genres {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .genre-tag {
+        font-size: 0.58rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        padding: 0.28rem 0.75rem;
+        border: 1px solid var(--border2);
+        border-radius: 1px;
+        color: var(--text-dim);
+        transition: all 0.2s;
+      }
+      .genre-tag:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+        cursor: pointer;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+      .modal-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.7rem 1.5rem;
+        background: transparent;
+        border: 1px solid var(--gold);
+        color: var(--gold);
+        font-family: "Syne", sans-serif;
+        font-size: 0.62rem;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: all 0.2s;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .modal-link:hover {
+        background: var(--gold-dim);
+      }
+
+      /* ══════════════════════════════════
+   FAVORITES DRAWER
+══════════════════════════════════ */
+      .drawer-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 300;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+        backdrop-filter: blur(4px);
+      }
+      .drawer-overlay.open {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 380px;
+        max-width: 92vw;
+        height: 100vh;
+        background: var(--surface);
+        border-left: 1px solid var(--border2);
+        z-index: 400;
+        transform: translateX(100%);
+        transition:
+          transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+          background 0.4s;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .drawer.open {
+        transform: translateX(0);
+      }
+
+      .drawer-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+      }
+      .drawer-title {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 1.4rem;
+        font-weight: 400;
+      }
+      .drawer-close {
+        background: transparent;
+        border: 1px solid var(--border2);
+        color: var(--text-dim);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        padding: 0;
+        line-height: 1;
+      }
+      .drawer-close:hover {
+        background: var(--surface2);
+        color: var(--text);
+      }
+
+      .drawer-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border2) transparent;
+      }
+
+      .fav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 2px;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: var(--surface);
+      }
+      .fav-item:hover {
+        border-color: var(--gold);
+        background: var(--gold-dim);
+      }
+      .fav-thumb {
+        width: 40px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 1px;
+        flex-shrink: 0;
+        background: var(--surface2);
+      }
+      .fav-thumb-ph {
+        width: 40px;
+        height: 60px;
+        border-radius: 1px;
+        flex-shrink: 0;
+        background: var(--surface2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: var(--text-muted);
+      }
+      .fav-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .fav-name {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 0.95rem;
+        font-weight: 400;
+        margin-bottom: 0.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .fav-meta {
+        font-size: 0.58rem;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+      }
+      .fav-remove {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 0.85rem;
+        padding: 0.25rem;
+        transition: color 0.2s;
+        flex-shrink: 0;
+        line-height: 1;
+      }
+      .fav-remove:hover {
+        color: var(--movie);
+      }
+
+      .drawer-empty {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-muted);
+      }
+      .drawer-empty .de-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+      }
+      .drawer-empty p {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 1rem;
+        font-weight: 300;
+      }
+
+      /* ══════════════════════════════════
+   STATES
+══════════════════════════════════ */
+      .state-wrap {
+        text-align: center;
+        padding: 6rem 2rem;
+        opacity: 0;
+        animation: fadeUp 0.6s ease forwards;
+      }
+      .state-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+      }
+      .state-title {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 1.6rem;
+        font-weight: 300;
+        margin-bottom: 0.5rem;
+        color: var(--text-dim);
+      }
+      .state-sub {
+        font-size: 0.72rem;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+      }
+
+      .spinner-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 6rem;
+        gap: 1.5rem;
+      }
+      .spinner {
+        width: 2rem;
+        height: 2rem;
+        border: 1px solid var(--border2);
+        border-top-color: var(--gold);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      .spinner-label {
+        font-size: 0.62rem;
+        letter-spacing: 0.25em;
+        color: var(--text-muted);
+        text-transform: uppercase;
+      }
+
+      /* ══════════════════════════════════
+   TOAST
+══════════════════════════════════ */
+      .toast-container {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9990;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        pointer-events: none;
+      }
+      .toast {
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: 2px;
+        padding: 0.7rem 1.5rem;
+        font-size: 0.68rem;
+        letter-spacing: 0.12em;
+        color: var(--text);
+        box-shadow: 0 8px 30px var(--shadow);
+        white-space: nowrap;
+        animation:
+          toastIn 0.3s ease,
+          toastOut 0.3s ease 2.2s forwards;
+      }
+
+      /* ══════════════════════════════════
+   SCROLL TO TOP
+══════════════════════════════════ */
+      .scroll-top {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 42px;
+        height: 42px;
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        color: var(--gold);
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s;
+        box-shadow: 0 4px 20px var(--shadow);
+      }
+      .scroll-top.visible {
+        opacity: 1;
+        pointer-events: all;
+      }
+      .scroll-top:hover {
+        background: var(--gold-dim);
+        border-color: var(--gold);
+        transform: translateY(-3px);
+      }
+
+      /* ══════════════════════════════════
+   FOOTER
+══════════════════════════════════ */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 2rem 4rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: border-color 0.4s;
+      }
+      .footer-text {
+        font-size: 0.58rem;
+        letter-spacing: 0.15em;
+        color: var(--text-muted);
+        text-transform: uppercase;
+      }
+      .footer-apis {
+        display: flex;
+        gap: 1rem;
+      }
+      .api-badge {
+        font-family: "DM Mono", monospace;
+        font-size: 0.58rem;
+        color: var(--text-muted);
+        padding: 0.18rem 0.55rem;
+        border: 1px solid var(--border);
+        border-radius: 2px;
+      }
+
+      /* ══════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════ */
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes cardIn {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes toastIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes toastOut {
+        to {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+      }
+
+      .card:nth-child(1) {
+        animation-delay: 0.05s;
+      }
+      .card:nth-child(2) {
+        animation-delay: 0.1s;
+      }
+      .card:nth-child(3) {
+        animation-delay: 0.15s;
+      }
+      .card:nth-child(4) {
+        animation-delay: 0.2s;
+      }
+      .card:nth-child(5) {
+        animation-delay: 0.25s;
+      }
+      .card:nth-child(6) {
+        animation-delay: 0.3s;
+      }
+      .card:nth-child(7) {
+        animation-delay: 0.35s;
+      }
+      .card:nth-child(8) {
+        animation-delay: 0.4s;
+      }
+      .card:nth-child(9) {
+        animation-delay: 0.45s;
+      }
+      .card:nth-child(10) {
+        animation-delay: 0.5s;
+      }
+      .card:nth-child(n + 11) {
+        animation-delay: 0.55s;
+      }
+
+      /* ══════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════ */
+      @media (max-width: 1000px) {
+        header {
+          padding: 0 2rem;
+        }
+        .main {
+          padding: 2rem 2rem 4rem;
+        }
+        footer {
+          padding: 1.5rem 2rem;
+          flex-direction: column;
+          gap: 0.75rem;
+          text-align: center;
+        }
+        .trending-strip {
+          padding: 0.8rem 2rem;
+        }
+      }
+      @media (max-width: 720px) {
+        .hero {
+          padding: 90px 1.5rem 5rem;
+          min-height: 90vh;
+        }
+        .grid {
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 1rem;
+        }
+        .modal-body {
+          grid-template-columns: 1fr;
+        }
+        .modal-poster-col {
+          display: flex;
+          gap: 1rem;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+        .modal-poster-img {
+          width: 100px;
+        }
+        .modal-poster-ph {
+          width: 100px;
+          height: 150px;
+          flex-shrink: 0;
+        }
+        .modal-fav-btn {
+          width: auto;
+        }
+        .modal-content {
+          padding: 1.5rem;
+        }
+        .tab {
+          padding: 0.6rem 1.2rem;
+        }
+        .header-nav .nav-btn span {
+          display: none;
+        }
+        .nav-btn {
+          padding: 0.45rem 0.7rem;
+        }
+      }
+      @media (max-width: 480px) {
+        .grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ══ HEADER ══ -->
+    <header id="siteHeader">
+      <a class="logo" onclick="scrollToTop()">Lumière<sup>™</sup></a>
+      <nav class="header-nav">
+        <button class="nav-btn" onclick="showSection('trending')">
+          🔥 <span>Trending</span>
+        </button>
+        <button class="nav-btn fav-btn" onclick="openDrawer()" id="favNavBtn">
+          ♡ <span>Saved</span>
+          <span class="fav-count" id="favCount">0</span>
+        </button>
+        <button
+          class="theme-toggle"
+          onclick="toggleTheme()"
+          aria-label="Toggle theme"
+        >
+          <span class="theme-icon moon">🌙</span>
+          <span class="theme-icon sun">☀️</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- ══ HERO ══ -->
+    <section class="hero" id="heroSection">
+      <div class="hero-bg" id="heroBg">
+        <div class="wallpaper-slide active" id="slide0"></div>
+        <div class="wallpaper-slide" id="slide1"></div>
+        <div class="wallpaper-slide" id="slide2"></div>
+        <div class="wallpaper-slide" id="slide3"></div>
+        <div class="wallpaper-slide" id="slide4"></div>
+        <div class="wallpaper-slide" id="slide5"></div>
+      </div>
+      <div class="hero-overlay"></div>
+
+      <div class="hero-content">
+        <div class="hero-eyebrow">A curated lens into stories</div>
+        <h1 class="hero-title">
+          Discover <em>films</em><br />&amp; literature
+        </h1>
+        <p class="hero-sub">
+          Search millions of movies and books from global archives
+        </p>
+
+        <div class="search-area">
+          <div class="tabs">
+            <button
+              class="tab active"
+              data-type="movies"
+              onclick="setType('movies')"
+            >
+              🎬 &nbsp;Movies
+            </button>
+            <button class="tab" data-type="books" onclick="setType('books')">
+              📖 &nbsp;Books
+            </button>
+          </div>
+          <div class="search-box">
+            <span class="search-icon">⌕</span>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search for a title, author, or director…"
+              autocomplete="off"
+            />
+            <button class="search-btn" onclick="doSearch()">Search</button>
+          </div>
+          <div class="quick-tags" id="quickTags">
+            <span class="quick-tag" onclick="quickSearch('Avengers')"
+              >Avengers</span
+            >
+            <span class="quick-tag" onclick="quickSearch('Interstellar')"
+              >Interstellar</span
+            >
+            <span class="quick-tag" onclick="quickSearch('Dune')">Dune</span>
+            <span class="quick-tag" onclick="quickSearch('The Batman')"
+              >The Batman</span
+            >
+            <span class="quick-tag" onclick="quickSearch('Harry Potter')"
+              >Harry Potter</span
+            >
+            <span class="quick-tag" onclick="quickSearch('Oppenheimer')"
+              >Oppenheimer</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide dots -->
+      <div class="slide-dots" id="slideDots"></div>
+    </section>
+
+    <!-- ══ TRENDING STRIP ══ -->
+    <div class="trending-strip" id="trendingStrip">
+      <span class="trending-label">🔥 Trending</span>
+      <div class="trending-sep"></div>
+      <div class="trending-item" onclick="quickSearch('Avengers Endgame')">
+        <span class="trending-num">01</span
+        ><span class="trending-name">Avengers: Endgame</span>
+      </div>
+      <div class="trending-sep"></div>
+      <div class="trending-item" onclick="quickSearch('Deadpool')">
+        <span class="trending-num">02</span
+        ><span class="trending-name">Deadpool & Wolverine</span>
+      </div>
+      <div class="trending-sep"></div>
+      <div class="trending-item" onclick="quickSearch('Dune Part Two')">
+        <span class="trending-num">03</span
+        ><span class="trending-name">Dune: Part Two</span>
+      </div>
+      <div class="trending-sep"></div>
+      <div class="trending-item" onclick="quickSearch('Furiosa')">
+        <span class="trending-num">04</span
+        ><span class="trending-name">Furiosa</span>
+      </div>
+      <div class="trending-sep"></div>
+      <div class="trending-item" onclick="quickSearch('Alien Romulus')">
+        <span class="trending-num">05</span
+        ><span class="trending-name">Alien: Romulus</span>
+      </div>
+      <div class="trending-sep"></div>
+      <div class="trending-item" onclick="quickSearch('Moana 2')">
+        <span class="trending-num">06</span
+        ><span class="trending-name">Moana 2</span>
+      </div>
+      <div class="trending-sep"></div>
+      <div class="trending-item" onclick="quickSearch('Atomic Habits')">
+        <span class="trending-num">07</span
+        ><span class="trending-name">Atomic Habits</span>
+      </div>
+      <div class="trending-sep"></div>
+      <div class="trending-item" onclick="quickSearch('Fourth Wing')">
+        <span class="trending-num">08</span
+        ><span class="trending-name">Fourth Wing</span>
+      </div>
+      <div class="trending-sep"></div>
+      <div class="trending-item" onclick="quickSearch('Interstellar')">
+        <span class="trending-num">09</span
+        ><span class="trending-name">Interstellar</span>
+      </div>
+      <div class="trending-sep"></div>
+      <div class="trending-item" onclick="quickSearch('1984 Orwell')">
+        <span class="trending-num">10</span
+        ><span class="trending-name">1984 — Orwell</span>
+      </div>
+    </div>
+
+    <!-- ══ MAIN RESULTS ══ -->
+    <main class="main" id="mainSection" style="display: none">
+      <div class="view-controls" id="viewControls">
+        <div>
+          <div class="results-label" id="resultsLabel">Results</div>
+          <div class="results-count" id="resultsCount"></div>
+        </div>
+        <div class="view-btns">
+          <button
+            class="view-btn active"
+            id="gridViewBtn"
+            onclick="setView('grid')"
+            title="Grid view"
+          >
+            ⊞
+          </button>
+          <button
+            class="view-btn"
+            id="listViewBtn"
+            onclick="setView('list')"
+            title="List view"
+          >
+            ☰
+          </button>
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </main>
+
+    <div id="stateArea"></div>
+
+    <!-- ══ FOOTER ══ -->
+    <footer>
+      <span class="footer-text"
+        >© 2025 Lumière Discovery · All rights reserved</span
+      >
+      <div class="footer-apis">
+        <span class="api-badge">TMDB API</span>
+        <span class="api-badge">Open Library</span>
+      </div>
+    </footer>
+
+    <!-- ══ MODAL ══ -->
+    <div
+      class="modal-overlay"
+      id="modalOverlay"
+      onclick="closeModalClick(event)"
+    >
+      <div class="modal" id="modal">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div id="modalContent"></div>
+      </div>
+    </div>
+
+    <!-- ══ FAVORITES DRAWER ══ -->
+    <div
+      class="drawer-overlay"
+      id="drawerOverlay"
+      onclick="closeDrawer()"
+    ></div>
+    <div class="drawer" id="drawer">
+      <div class="drawer-header">
+        <span class="drawer-title">Saved Collection</span>
+        <button class="drawer-close" onclick="closeDrawer()">✕</button>
+      </div>
+      <div class="drawer-body" id="drawerBody"></div>
+    </div>
+
+    <!-- ══ TOAST ══ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ══ SCROLL TOP ══ -->
+    <button class="scroll-top" id="scrollTopBtn" onclick="scrollToTop()">
+      ↑
+    </button>
+
+    <script>
+      // ═══════════════════════════════
+      // CONFIG
+      // ═══════════════════════════════
+      const TMDB_KEY = "2dca580c2a14b55200e784d157207b4d";
+      const TMDB_IMG = "https://image.tmdb.org/t/p/w500";
+      const TMDB_BIG = "https://image.tmdb.org/t/p/w1280";
+      const OL_COVER = "https://covers.openlibrary.org/b/id/";
+
+      // ═══════════════════════════════
+      // STATE
+      // ═══════════════════════════════
+      let currentType = "movies";
+      let currentView = "grid";
+      let favorites = JSON.parse(localStorage.getItem("lumiere_favs") || "[]");
+      let currentModalItem = null;
+      let slideIndex = 0;
+      let slideCount = 6;
+      let slideTimer = null;
+
+      // ═══════════════════════════════
+      // THEME
+      // ═══════════════════════════════
+      function toggleTheme() {
+        const html = document.documentElement;
+        const isDark = html.getAttribute("data-theme") === "dark";
+        html.setAttribute("data-theme", isDark ? "light" : "dark");
+        localStorage.setItem("lumiere_theme", isDark ? "light" : "dark");
+      }
+      // Restore theme
+      (function () {
+        const saved = localStorage.getItem("lumiere_theme");
+        if (saved) document.documentElement.setAttribute("data-theme", saved);
+      })();
+
+      // ═══════════════════════════════
+      // HERO SLIDESHOW
+      // ═══════════════════════════════
+      function initSlides() {
+        const dots = document.getElementById("slideDots");
+        for (let i = 0; i < slideCount; i++) {
+          const d = document.createElement("button");
+          d.className = "slide-dot" + (i === 0 ? " active" : "");
+          d.setAttribute("aria-label", "Slide " + (i + 1));
+          d.addEventListener("click", () => goSlide(i));
+          dots.appendChild(d);
+        }
+        slideTimer = setInterval(nextSlide, 5000);
+      }
+
+      function goSlide(idx) {
+        const slides = document.querySelectorAll(".wallpaper-slide");
+        const dots = document.querySelectorAll(".slide-dot");
+        slides[slideIndex].classList.remove("active");
+        dots[slideIndex].classList.remove("active");
+        slideIndex = (idx + slideCount) % slideCount;
+        slides[slideIndex].classList.add("active");
+        dots[slideIndex].classList.add("active");
+      }
+
+      function nextSlide() {
+        goSlide(slideIndex + 1);
+      }
+
+      initSlides();
+
+      // ═══════════════════════════════
+      // TYPE & VIEW
+      // ═══════════════════════════════
+      function setType(type) {
+        currentType = type;
+        document
+          .querySelectorAll(".tab")
+          .forEach((t) => t.classList.remove("active"));
+        document
+          .querySelector(`.tab[data-type="${type}"]`)
+          .classList.add("active");
+        document.getElementById("searchInput").placeholder =
+          type === "movies"
+            ? "Search for a movie title or director…"
+            : "Search for a book title or author…";
+
+        // Update quick tags
+        const tags =
+          type === "movies"
+            ? [
+                "Avengers",
+                "Interstellar",
+                "Dune",
+                "The Batman",
+                "Oppenheimer",
+                "Inception",
+              ]
+            : [
+                "Harry Potter",
+                "1984",
+                "Dune",
+                "Atomic Habits",
+                "The Alchemist",
+                "Sapiens",
+              ];
+        const qt = document.getElementById("quickTags");
+        qt.innerHTML = tags
+          .map(
+            (t) =>
+              `<span class="quick-tag" onclick="quickSearch('${t}')">${t}</span>`,
+          )
+          .join("");
+
+        clearResults();
+      }
+
+      function setView(v) {
+        currentView = v;
+        const grid = document.getElementById("grid");
+        grid.classList.toggle("list-view", v === "list");
+        document
+          .getElementById("gridViewBtn")
+          .classList.toggle("active", v === "grid");
+        document
+          .getElementById("listViewBtn")
+          .classList.toggle("active", v === "list");
+      }
+
+      function clearResults() {
+        document.getElementById("mainSection").style.display = "none";
+        document.getElementById("stateArea").innerHTML = "";
+        document.getElementById("grid").innerHTML = "";
+      }
+
+      // ═══════════════════════════════
+      // SEARCH
+      // ═══════════════════════════════
+      document
+        .getElementById("searchInput")
+        .addEventListener("keydown", (e) => {
+          if (e.key === "Enter") doSearch();
+        });
+
+      function quickSearch(q) {
+        document.getElementById("searchInput").value = q;
+        doSearch();
+        window.scrollTo({
+          top: document.getElementById("trendingStrip").offsetTop - 70,
+          behavior: "smooth",
+        });
+      }
+
+      async function doSearch() {
+        const q = document.getElementById("searchInput").value.trim();
+        if (!q) return;
+        showSpinner();
+        try {
+          if (currentType === "movies") await searchMovies(q);
+          else await searchBooks(q);
+        } catch (err) {
+          showError();
+        }
+      }
+
+      // ═══════════════════════════════
+      // MOVIES (TMDB)
+      // ═══════════════════════════════
+      async function searchMovies(q) {
+        const res = await fetch(
+          `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}&page=1&include_adult=false`,
+        );
+        if (!res.ok) throw new Error("TMDB");
+        const data = await res.json();
+        renderMovies(data.results || [], data.total_results || 0, q);
+      }
+
+      function renderMovies(movies, total, q) {
+        if (!movies.length) {
+          showNoResults(q);
+          return;
+        }
+        showResults();
+        document.getElementById("resultsLabel").textContent = `Movies — "${q}"`;
+        document.getElementById("resultsCount").textContent =
+          `${total.toLocaleString()} results`;
+        const grid = document.getElementById("grid");
+        grid.innerHTML = "";
+
+        movies.slice(0, 20).forEach((m) => {
+          const isFaved = isFavorited(m.id, "movie");
+          const posterEl = m.poster_path
+            ? `<img class="card-poster" src="${TMDB_IMG}${m.poster_path}" alt="${esc(m.title)}" loading="lazy">`
+            : `<div class="card-poster-placeholder">🎬<span>No Image</span></div>`;
+          const year = m.release_date ? m.release_date.substring(0, 4) : "—";
+          const rating = m.vote_average ? m.vote_average.toFixed(1) : null;
+
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+      ${posterEl}
+      <span class="card-type-badge badge-movie">Film</span>
+      <button class="card-fav ${isFaved ? "faved" : ""}" onclick="toggleFavMovie(event,${JSON.stringify(m).replace(/"/g, "&quot;")})" title="${isFaved ? "Remove from saved" : "Save"}">
+        ${isFaved ? "♥" : "♡"}
+      </button>
+      <div class="card-body">
+        <div class="card-title">${esc(m.title)}</div>
+        <div class="card-meta">
+          <span class="card-year">${year}</span>
+          ${rating ? `<span class="card-rating">${rating}</span>` : ""}
+        </div>
+      </div>`;
+          card.addEventListener("click", () => openMovieModal(m.id));
+          grid.appendChild(card);
+        });
+      }
+
+      async function openMovieModal(id) {
+        const res = await fetch(
+          `https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_KEY}&append_to_response=credits`,
+        );
+        if (!res.ok) return;
+        const m = await res.json();
+        currentModalItem = { id: m.id, type: "movie", data: m };
+
+        const poster = m.poster_path
+          ? `<img class="modal-poster-img" src="${TMDB_IMG}${m.poster_path}" alt="${esc(m.title)}">`
+          : `<div class="modal-poster-ph">🎬</div>`;
+        const backdrop = m.backdrop_path
+          ? `<img class="modal-backdrop-img" src="${TMDB_BIG}${m.backdrop_path}" alt="">`
+          : `<div class="modal-backdrop-placeholder"></div>`;
+
+        const director = m.credits?.crew?.find((c) => c.job === "Director");
+        const cast =
+          m.credits?.cast
+            ?.slice(0, 4)
+            .map((a) => a.name)
+            .join(", ") || "—";
+        const genres =
+          m.genres
+            ?.map(
+              (g) =>
+                `<span class="genre-tag" onclick="quickSearch('${g.name}')">${g.name}</span>`,
+            )
+            .join("") || "";
+        const year = m.release_date ? m.release_date.substring(0, 4) : "—";
+        const runtime = m.runtime
+          ? `${Math.floor(m.runtime / 60)}h ${m.runtime % 60}m`
+          : "—";
+        const rating = m.vote_average ? m.vote_average.toFixed(1) : "—";
+        const votes = m.vote_count ? m.vote_count.toLocaleString() : "—";
+        const budget = m.budget > 0 ? `$${(m.budget / 1e6).toFixed(0)}M` : "—";
+        const stars = renderStars(m.vote_average || 0);
+        const isFaved = isFavorited(m.id, "movie");
+
+        document.getElementById("modalContent").innerHTML = `
+    ${backdrop}
+    <div class="modal-body">
+      <div class="modal-poster-col">
+        ${poster}
+        <button class="modal-fav-btn ${isFaved ? "faved" : ""}" onclick="toggleFavFromModal()" id="modalFavBtn">
+          ${isFaved ? "♥ Saved" : "♡ Save"}
+        </button>
+      </div>
+      <div class="modal-content">
+        <span class="modal-badge badge-movie">Film</span>
+        <div class="modal-title">${esc(m.title)}</div>
+        ${m.tagline ? `<div class="modal-subtitle">"${esc(m.tagline)}"</div>` : ""}
+        <div class="star-display">${stars}</div>
+        <div class="modal-stats">
+          <div class="stat"><span class="stat-label">Year</span><span class="stat-value">${year}</span></div>
+          <div class="stat"><span class="stat-label">Runtime</span><span class="stat-value">${runtime}</span></div>
+          <div class="stat"><span class="stat-label">Rating</span><span class="stat-value">★ ${rating}</span></div>
+          <div class="stat"><span class="stat-label">Votes</span><span class="stat-value">${votes}</span></div>
+          <div class="stat"><span class="stat-label">Budget</span><span class="stat-value">${budget}</span></div>
+          ${director ? `<div class="stat"><span class="stat-label">Director</span><span class="stat-value text">${esc(director.name)}</span></div>` : ""}
+        </div>
+        ${cast !== "—" ? `<div class="stat" style="margin-bottom:1.2rem"><span class="stat-label">Cast</span><div style="font-family:'Cormorant Garamond',serif;font-size:0.95rem;color:var(--text-dim);margin-top:0.3rem">${esc(cast)}</div></div>` : ""}
+        ${m.overview ? `<p class="modal-overview">${esc(m.overview)}</p>` : ""}
+        ${genres ? `<div class="modal-genres">${genres}</div>` : ""}
+        <div class="modal-actions">
+          <a href="https://www.themoviedb.org/movie/${m.id}" target="_blank" class="modal-link">View on TMDB ↗</a>
+          <a href="https://www.imdb.com/find?q=${encodeURIComponent(m.title)}" target="_blank" class="modal-link">Search IMDb ↗</a>
+        </div>
+      </div>
+    </div>`;
+        openModal();
+      }
+
+      // ═══════════════════════════════
+      // BOOKS (Open Library)
+      // ═══════════════════════════════
+      async function searchBooks(q) {
+        const res = await fetch(
+          `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=20&fields=key,title,author_name,first_publish_year,cover_i,subject,ratings_average,ratings_count,number_of_pages_median`,
+        );
+        if (!res.ok) throw new Error("Open Library");
+        const data = await res.json();
+        renderBooks(data.docs || [], data.numFound || 0, q);
+      }
+
+      function renderBooks(books, total, q) {
+        if (!books.length) {
+          showNoResults(q);
+          return;
+        }
+        showResults();
+        document.getElementById("resultsLabel").textContent = `Books — "${q}"`;
+        document.getElementById("resultsCount").textContent =
+          `${total.toLocaleString()} results`;
+        const grid = document.getElementById("grid");
+        grid.innerHTML = "";
+
+        books.slice(0, 20).forEach((b) => {
+          const coverUrl = b.cover_i ? `${OL_COVER}${b.cover_i}-M.jpg` : null;
+          const posterEl = coverUrl
+            ? `<img class="card-poster" src="${coverUrl}" alt="${esc(b.title)}" loading="lazy">`
+            : `<div class="card-poster-placeholder">📖<span>No Cover</span></div>`;
+          const author = b.author_name ? b.author_name[0] : "—";
+          const year = b.first_publish_year || "—";
+          const rating = b.ratings_average
+            ? b.ratings_average.toFixed(1)
+            : null;
+          const isFaved = isFavorited(b.key, "book");
+
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+      ${posterEl}
+      <span class="card-type-badge badge-book">Book</span>
+      <button class="card-fav ${isFaved ? "faved" : ""}" onclick="toggleFavBook(event,${JSON.stringify(b).replace(/"/g, "&quot;")})" title="${isFaved ? "Remove" : "Save"}">
+        ${isFaved ? "♥" : "♡"}
+      </button>
+      <div class="card-body">
+        <div class="card-title">${esc(b.title)}</div>
+        <div class="card-meta">
+          <span>${esc(author)}</span>
+          <span class="card-year">${year}</span>
+          ${rating ? `<span class="card-rating">${rating}</span>` : ""}
+        </div>
+      </div>`;
+          card.addEventListener("click", () => openBookModal(b));
+          grid.appendChild(card);
+        });
+      }
+
+      function openBookModal(b) {
+        currentModalItem = { id: b.key, type: "book", data: b };
+        const coverLarge = b.cover_i ? `${OL_COVER}${b.cover_i}-L.jpg` : null;
+        const poster = coverLarge
+          ? `<img class="modal-poster-img" src="${coverLarge}" alt="${esc(b.title)}">`
+          : `<div class="modal-poster-ph">📖</div>`;
+        const authors = b.author_name ? b.author_name.join(", ") : "—";
+        const year = b.first_publish_year || "—";
+        const rating = b.ratings_average ? b.ratings_average.toFixed(2) : "—";
+        const votes = b.ratings_count ? b.ratings_count.toLocaleString() : "—";
+        const pages = b.number_of_pages_median || "—";
+        const subjects = b.subject
+          ? b.subject
+              .slice(0, 6)
+              .map(
+                (s) =>
+                  `<span class="genre-tag" onclick="quickSearch('${esc(s)}')">${esc(s)}</span>`,
+              )
+              .join("")
+          : "";
+        const olUrl = b.key
+          ? `https://openlibrary.org${b.key}`
+          : "https://openlibrary.org";
+        const stars = renderStars((b.ratings_average || 0) * 2);
+        const isFaved = isFavorited(b.key, "book");
+
+        document.getElementById("modalContent").innerHTML = `
+    <div class="modal-backdrop-placeholder"></div>
+    <div class="modal-body">
+      <div class="modal-poster-col">
+        ${poster}
+        <button class="modal-fav-btn ${isFaved ? "faved" : ""}" onclick="toggleFavFromModal()" id="modalFavBtn">
+          ${isFaved ? "♥ Saved" : "♡ Save"}
+        </button>
+      </div>
+      <div class="modal-content">
+        <span class="modal-badge badge-book">Literature</span>
+        <div class="modal-title">${esc(b.title)}</div>
+        <div class="modal-subtitle">by ${esc(authors)}</div>
+        <div class="star-display">${stars}</div>
+        <div class="modal-stats">
+          <div class="stat"><span class="stat-label">Published</span><span class="stat-value">${year}</span></div>
+          <div class="stat"><span class="stat-label">Pages</span><span class="stat-value">${pages}</span></div>
+          <div class="stat"><span class="stat-label">Rating</span><span class="stat-value">★ ${rating}</span></div>
+          <div class="stat"><span class="stat-label">Ratings</span><span class="stat-value">${votes}</span></div>
+        </div>
+        ${subjects ? `<div class="modal-genres">${subjects}</div>` : ""}
+        <div class="modal-actions">
+          <a href="${olUrl}" target="_blank" class="modal-link">Open Library ↗</a>
+          <a href="https://www.goodreads.com/search?q=${encodeURIComponent(b.title)}" target="_blank" class="modal-link">Goodreads ↗</a>
+        </div>
+      </div>
+    </div>`;
+        openModal();
+      }
+
+      // ═══════════════════════════════
+      // STAR RATING
+      // ═══════════════════════════════
+      function renderStars(score) {
+        const filled = Math.round(score / 2);
+        let html = "";
+        for (let i = 1; i <= 5; i++) {
+          html += `<span class="${i <= filled ? "lit" : ""}">★</span>`;
+        }
+        return html;
+      }
+
+      // ═══════════════════════════════
+      // FAVORITES
+      // ═══════════════════════════════
+      function isFavorited(id, type) {
+        return favorites.some((f) => f.id == id && f.type === type);
+      }
+
+      function toggleFavMovie(e, m) {
+        e.stopPropagation();
+        const fav = {
+          id: m.id,
+          type: "movie",
+          title: m.title,
+          year: m.release_date?.substring(0, 4) || "",
+          cover: m.poster_path ? TMDB_IMG + m.poster_path : null,
+        };
+        toggleFav(fav);
+        const btn = e.currentTarget;
+        const alreadyFaved = !isFavorited(m.id, "movie"); // state after toggle
+        btn.classList.toggle("faved", !alreadyFaved);
+        btn.textContent = !alreadyFaved ? "♥" : "♡";
+      }
+
+      function toggleFavBook(e, b) {
+        e.stopPropagation();
+        const fav = {
+          id: b.key,
+          type: "book",
+          title: b.title,
+          year: b.first_publish_year || "",
+          cover: b.cover_i ? OL_COVER + b.cover_i + "-M.jpg" : null,
+        };
+        toggleFav(fav);
+        const btn = e.currentTarget;
+        const alreadyFaved = !isFavorited(b.key, "book");
+        btn.classList.toggle("faved", !alreadyFaved);
+        btn.textContent = !alreadyFaved ? "♥" : "♡";
+      }
+
+      function toggleFavFromModal() {
+        if (!currentModalItem) return;
+        const { id, type, data } = currentModalItem;
+        let fav;
+        if (type === "movie") {
+          fav = {
+            id: data.id,
+            type: "movie",
+            title: data.title,
+            year: data.release_date?.substring(0, 4) || "",
+            cover: data.poster_path ? TMDB_IMG + data.poster_path : null,
+          };
+        } else {
+          fav = {
+            id: data.key,
+            type: "book",
+            title: data.title,
+            year: data.first_publish_year || "",
+            cover: data.cover_i ? OL_COVER + data.cover_i + "-M.jpg" : null,
+          };
+        }
+        toggleFav(fav);
+        const btn = document.getElementById("modalFavBtn");
+        if (btn) {
+          const faved = isFavorited(id, type);
+          btn.classList.toggle("faved", faved);
+          btn.innerHTML = faved ? "♥ Saved" : "♡ Save";
+        }
+      }
+
+      function toggleFav(fav) {
+        const idx = favorites.findIndex(
+          (f) => f.id == fav.id && f.type === fav.type,
+        );
+        if (idx > -1) {
+          favorites.splice(idx, 1);
+          showToast(`Removed from collection`);
+        } else {
+          favorites.unshift(fav);
+          showToast(`Added to collection ♥`);
+        }
+        localStorage.setItem("lumiere_favs", JSON.stringify(favorites));
+        updateFavCount();
+      }
+
+      function updateFavCount() {
+        const cnt = document.getElementById("favCount");
+        cnt.textContent = favorites.length;
+        cnt.classList.toggle("show", favorites.length > 0);
+      }
+      updateFavCount();
+
+      // ═══════════════════════════════
+      // DRAWER
+      // ═══════════════════════════════
+      function openDrawer() {
+        renderDrawer();
+        document.getElementById("drawer").classList.add("open");
+        document.getElementById("drawerOverlay").classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeDrawer() {
+        document.getElementById("drawer").classList.remove("open");
+        document.getElementById("drawerOverlay").classList.remove("open");
+        document.body.style.overflow = "";
+      }
+
+      function renderDrawer() {
+        const body = document.getElementById("drawerBody");
+        if (!favorites.length) {
+          body.innerHTML = `<div class="drawer-empty"><div class="de-icon">◎</div><p>Your collection is empty.<br>Start saving films and books.</p></div>`;
+          return;
+        }
+        body.innerHTML = favorites
+          .map(
+            (f, i) => `
+    <div class="fav-item" onclick="searchByFav('${esc(f.title)}','${f.type}')">
+      ${f.cover ? `<img class="fav-thumb" src="${f.cover}" alt="${esc(f.title)}" loading="lazy">` : `<div class="fav-thumb-ph">${f.type === "movie" ? "🎬" : "📖"}</div>`}
+      <div class="fav-info">
+        <div class="fav-name">${esc(f.title)}</div>
+        <div class="fav-meta">${f.type === "movie" ? "🎬 Film" : "📖 Book"} ${f.year ? "· " + f.year : ""}</div>
+      </div>
+      <button class="fav-remove" onclick="removeFavIdx(event,${i})" title="Remove">✕</button>
+    </div>`,
+          )
+          .join("");
+      }
+
+      function searchByFav(title, type) {
+        closeDrawer();
+        setType(type === "movie" ? "movies" : "books");
+        document
+          .querySelectorAll(".tab")
+          .forEach((t) => t.classList.remove("active"));
+        document
+          .querySelector(
+            `.tab[data-type="${type === "movie" ? "movies" : "books"}"]`,
+          )
+          .classList.add("active");
+        document.getElementById("searchInput").value = title;
+        doSearch();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function removeFavIdx(e, i) {
+        e.stopPropagation();
+        favorites.splice(i, 1);
+        localStorage.setItem("lumiere_favs", JSON.stringify(favorites));
+        updateFavCount();
+        renderDrawer();
+        showToast("Removed from collection");
+      }
+
+      // ═══════════════════════════════
+      // MODAL
+      // ═══════════════════════════════
+      function openModal() {
+        document.getElementById("modalOverlay").classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+      function closeModal() {
+        document.getElementById("modalOverlay").classList.remove("open");
+        document.body.style.overflow = "";
+        currentModalItem = null;
+      }
+      function closeModalClick(e) {
+        if (e.target === document.getElementById("modalOverlay")) closeModal();
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeModal();
+          closeDrawer();
+        }
+      });
+
+      // ═══════════════════════════════
+      // UI HELPERS
+      // ═══════════════════════════════
+      function showSpinner() {
+        document.getElementById("mainSection").style.display = "none";
+        document.getElementById("stateArea").innerHTML = `
+    <div class="spinner-wrap">
+      <div class="spinner"></div>
+      <span class="spinner-label">Searching the archives…</span>
+    </div>`;
+      }
+
+      function showResults() {
+        document.getElementById("stateArea").innerHTML = "";
+        document.getElementById("mainSection").style.display = "block";
+        setTimeout(() => {
+          document
+            .getElementById("mainSection")
+            .scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }
+
+      function showNoResults(q) {
+        document.getElementById("mainSection").style.display = "none";
+        document.getElementById("stateArea").innerHTML = `
+    <div class="state-wrap">
+      <div class="state-icon">◎</div>
+      <div class="state-title">No results for "${esc(q)}"</div>
+      <div class="state-sub">Try a different title or spelling</div>
+    </div>`;
+      }
+
+      function showError() {
+        document.getElementById("mainSection").style.display = "none";
+        document.getElementById("stateArea").innerHTML = `
+    <div class="state-wrap">
+      <div class="state-icon">⚠</div>
+      <div class="state-title">Something went wrong</div>
+      <div class="state-sub">Check your connection and try again</div>
+    </div>`;
+      }
+
+      function esc(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      // ═══════════════════════════════
+      // TOAST
+      // ═══════════════════════════════
+      function showToast(msg) {
+        const container = document.getElementById("toastContainer");
+        const t = document.createElement("div");
+        t.className = "toast";
+        t.textContent = msg;
+        container.appendChild(t);
+        setTimeout(() => {
+          if (t.parentNode) t.parentNode.removeChild(t);
+        }, 2600);
+      }
+
+      // ═══════════════════════════════
+      // SCROLL TO TOP
+      // ═══════════════════════════════
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      window.addEventListener("scroll", () => {
+        const btn = document.getElementById("scrollTopBtn");
+        btn.classList.toggle("visible", window.scrollY > 400);
+      });
+
+      // ═══════════════════════════════
+      // TRENDING (just scroll to strip)
+      // ═══════════════════════════════
+      function showSection(s) {
+        if (s === "trending") {
+          document
+            .getElementById("trendingStrip")
+            .scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+    </script>
+  </body>
+</html>
